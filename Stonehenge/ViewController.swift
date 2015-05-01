@@ -12,6 +12,14 @@ import Foundation
 
 class ViewController: UIViewController {
     
+    // Geometry
+    var geometryNode: SCNNode = SCNNode()
+    
+    // Gestures
+    var currentX: Float = 0.0
+    var currentY: Float = 0.0
+    var currentZ: Float = 120.0
+    
     override func viewDidLoad() {
         
         super.viewDidLoad()
@@ -22,13 +30,21 @@ class ViewController: UIViewController {
         sceneView.autoresizingMask = UIViewAutoresizing.allZeros
         sceneView.scene = scene
         sceneView.autoenablesDefaultLighting = true
-        sceneView.allowsCameraControl = true
+        sceneView.allowsCameraControl = false
         sceneView.backgroundColor = UIColor.blueColor()
         self.view = sceneView
         
         //Add camera to scene.
         let camera = self.makeCamera()
         scene.rootNode.addChildNode(camera)
+        
+        geometryNode = camera;
+        
+        let panRecognizer = UIPanGestureRecognizer(target: self, action: "panGesture:")
+        sceneView.addGestureRecognizer(panRecognizer)
+        
+        let pinchRecognizer = UIPinchGestureRecognizer(target: self, action: "pinchGesture:")
+        sceneView.addGestureRecognizer(pinchRecognizer)
         
         //Add some ambient light so it's not so dark.
         let lights = self.makeAmbientLight()
@@ -39,6 +55,32 @@ class ViewController: UIViewController {
         scene.rootNode.addChildNode(floor)
         
         self.buildStonehenge(scene)
+        
+        
+    }
+    
+    func pinchGesture(sender: UIPinchGestureRecognizer) {
+        
+        currentZ = currentZ + ((Float)(sender.velocity))
+        
+        println(NSString(format:"currentZ: %.2f; scale: %.2f; velocity: %.2f", currentZ, sender.scale, sender.velocity))
+        geometryNode.position = SCNVector3(x:currentX, y:currentY, z:currentZ)
+    }
+    
+    func panGesture(sender: UIPanGestureRecognizer) {
+        let translation = sender.translationInView(sender.view!)
+        var newX = (Float)(translation.x)
+        var newY = (Float)(-translation.y)
+        newX += currentX
+        newY += currentY
+        
+        geometryNode.position = SCNVector3(x:newX, y:newY, z:currentZ)
+        //geometryNode.transform = SCNMatrix4MakeRotation(newAngle, 0, 0, 1)
+        
+        if(sender.state == UIGestureRecognizerState.Ended) {
+            currentX = newX
+            currentY = newY
+        }
     }
     
     func makeCamera() -> SCNNode {
