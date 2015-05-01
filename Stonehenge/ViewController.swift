@@ -19,6 +19,9 @@ class ViewController: UIViewController {
     var currentX: Float = 0.0
     var currentY: Float = 0.0
     var currentZ: Float = 120.0
+    var currentYaw: Float = 0.0
+    var currentPitch: Float = 0.0
+    var currentRoll: Float = 0.0
     
     override func viewDidLoad() {
         
@@ -41,7 +44,14 @@ class ViewController: UIViewController {
         geometryNode = camera;
         
         let panRecognizer = UIPanGestureRecognizer(target: self, action: "panGesture:")
+        panRecognizer.minimumNumberOfTouches = 1
+        panRecognizer.maximumNumberOfTouches = 1
         sceneView.addGestureRecognizer(panRecognizer)
+        
+        let panRecognizer2 = UIPanGestureRecognizer(target: self, action: "panGesture2:")
+        panRecognizer2.minimumNumberOfTouches = 2
+        panRecognizer2.maximumNumberOfTouches = 2
+        sceneView.addGestureRecognizer(panRecognizer2)
         
         let pinchRecognizer = UIPinchGestureRecognizer(target: self, action: "pinchGesture:")
         sceneView.addGestureRecognizer(pinchRecognizer)
@@ -80,6 +90,19 @@ class ViewController: UIViewController {
         if(sender.state == UIGestureRecognizerState.Ended) {
             currentX = newX
             currentY = newY
+        }
+    }
+    
+    func panGesture2(sender: UIPanGestureRecognizer) {
+        let translation = sender.translationInView(sender.view!)
+        var newYaw = (Float)(translation.x)*((Float)(M_PI)/180)
+        var newPitch = (Float)(-translation.y)*((Float)(M_PI)/180)
+        
+        geometryNode.eulerAngles = SCNVector3(x:newPitch, y:newYaw, z:currentRoll)
+        
+        if(sender.state == UIGestureRecognizerState.Ended) {
+            currentPitch = newPitch
+            currentYaw = newYaw
         }
     }
     
