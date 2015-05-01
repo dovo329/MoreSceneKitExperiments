@@ -102,7 +102,7 @@ class ViewController: UIViewController {
     
     func pinchGesture(sender: UIPinchGestureRecognizer) {
         
-        currentZ = currentZ + ((Float)(sender.velocity))
+        currentZ = currentZ + ((Float)(-sender.velocity))
         
         println(NSString(format:"currentZ: %.2f; scale: %.2f; velocity: %.2f", currentZ, sender.scale, sender.velocity))
         
@@ -136,7 +136,7 @@ class ViewController: UIViewController {
         let translation = sender.translationInView(sender.view!)
         //var newYaw = self.degreesToRadians((Float)(translation.x))
         //var newPitch = self.degreesToRadians((Float)(translation.y))
-        var newYaw = (Float)(translation.x)*(Float)(M_PI/180.0)
+        var newYaw = (Float)(-translation.x)*(Float)(M_PI/180.0)
         var newPitch = (Float)(translation.y)*(Float)(M_PI/180.0)
         newYaw += currentYaw
         newPitch += currentPitch
