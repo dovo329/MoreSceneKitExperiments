@@ -22,6 +22,8 @@ class ViewController: UIViewController {
     var currentYaw: Float = 0.0
     var currentPitch: Float = 0.0
     var currentRoll: Float = 0.0
+    var positionLabel : UILabel?
+    var rotationLabel : UILabel?
     
     override func viewDidLoad() {
         
@@ -67,6 +69,26 @@ class ViewController: UIViewController {
         self.buildStonehenge(scene)
         
         
+        let labelHeight = (CGFloat)(20.0)
+        
+        positionLabel = UILabel(frame: CGRectMake(15, self.view.bounds.size.height-(labelHeight*2), self.view.bounds.size.width, labelHeight))
+        //positionLabel.center = CGPointMake(160, 284)
+        positionLabel!.textAlignment = NSTextAlignment.Left
+        positionLabel!.textColor = UIColor.whiteColor()
+        self.view.addSubview(positionLabel!)
+        
+        rotationLabel = UILabel(frame: CGRectMake(15, self.view.bounds.size.height-labelHeight, self.view.bounds.size.width, labelHeight))
+        //rotationLabel.center = CGPointMake(160, 284)
+        rotationLabel!.textAlignment = NSTextAlignment.Left
+        rotationLabel!.textColor = UIColor.whiteColor()
+        self.view.addSubview(rotationLabel!)
+        
+        self.updateLabels(x:currentX, y:currentY, z:currentZ, yaw:currentYaw, pitch:currentPitch, roll:currentRoll)
+    }
+    
+    func updateLabels(#x: Float, y: Float, z: Float, yaw: Float, pitch: Float, roll: Float) {
+        positionLabel!.text = String(format: "x:%.2f y:%.2f z:%.2f", x, y, z)
+        rotationLabel!.text = String(format: "yaw:%0.2f pitch:%0.2f roll:%02.f", yaw*(Float)(180.0/M_PI), pitch*(Float)(180.0/M_PI), roll*(Float)(180.0/M_PI))
     }
     
     func pinchGesture(sender: UIPinchGestureRecognizer) {
@@ -74,6 +96,9 @@ class ViewController: UIViewController {
         currentZ = currentZ + ((Float)(sender.velocity))
         
         println(NSString(format:"currentZ: %.2f; scale: %.2f; velocity: %.2f", currentZ, sender.scale, sender.velocity))
+        
+        self.updateLabels(x:currentX, y:currentY, z:currentZ, yaw:currentYaw, pitch:currentPitch, roll:currentRoll)
+        
         geometryNode.position = SCNVector3(x:currentX, y:currentY, z:currentZ)
     }
     
@@ -84,9 +109,11 @@ class ViewController: UIViewController {
         newX += currentX
         newY += currentY
         
+        self.updateLabels(x:newX, y:newY, z:currentZ, yaw:currentYaw, pitch:currentPitch, roll:currentRoll)
+        
         geometryNode.position = SCNVector3(x:newX, y:newY, z:currentZ)
         //geometryNode.transform = SCNMatrix4MakeRotation(newAngle, 0, 0, 1)
-        
+
         if(sender.state == UIGestureRecognizerState.Ended) {
             currentX = newX
             currentY = newY
@@ -97,6 +124,10 @@ class ViewController: UIViewController {
         let translation = sender.translationInView(sender.view!)
         var newYaw = (Float)(translation.x)*((Float)(M_PI)/180)
         var newPitch = (Float)(-translation.y)*((Float)(M_PI)/180)
+        newYaw += currentYaw
+        newPitch += currentPitch
+        
+        self.updateLabels(x:currentX, y:currentY, z:currentZ, yaw:newYaw, pitch:newPitch, roll:currentRoll)
         
         geometryNode.eulerAngles = SCNVector3(x:newPitch, y:newYaw, z:currentRoll)
         
