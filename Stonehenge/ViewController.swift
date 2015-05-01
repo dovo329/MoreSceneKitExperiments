@@ -25,6 +25,15 @@ class ViewController: UIViewController {
     var positionLabel : UILabel?
     var rotationLabel : UILabel?
     
+    func radiansToDegrees(angleInRadians: Float) -> (Float) {
+        return (Float)(180.0/M_PI)*angleInRadians;
+    }
+    
+    func degreesToRadians(angleInDegrees: Float) -> (Float) {
+        return (Float)(M_PI/180.0)*angleInDegrees;
+    }
+    
+    
     override func viewDidLoad() {
         
         super.viewDidLoad()
@@ -88,7 +97,7 @@ class ViewController: UIViewController {
     
     func updateLabels(#x: Float, y: Float, z: Float, yaw: Float, pitch: Float, roll: Float) {
         positionLabel!.text = String(format: "x:%.2f y:%.2f z:%.2f", x, y, z)
-        rotationLabel!.text = String(format: "yaw:%0.2f pitch:%0.2f roll:%02.f", yaw*(Float)(180.0/M_PI), pitch*(Float)(180.0/M_PI), roll*(Float)(180.0/M_PI))
+        rotationLabel!.text = String(format: "yaw:%0.2f pitch:%0.2f roll:%02.f", self.radiansToDegrees(yaw), self.radiansToDegrees(pitch), self.radiansToDegrees(roll))
     }
     
     func pinchGesture(sender: UIPinchGestureRecognizer) {
@@ -108,6 +117,9 @@ class ViewController: UIViewController {
         var newY = (Float)(-translation.y)
         newX += currentX
         newY += currentY
+        if (newY < 0.5) {
+            newY = 0.5
+        }
         
         self.updateLabels(x:newX, y:newY, z:currentZ, yaw:currentYaw, pitch:currentPitch, roll:currentRoll)
         
@@ -122,8 +134,10 @@ class ViewController: UIViewController {
     
     func panGesture2(sender: UIPanGestureRecognizer) {
         let translation = sender.translationInView(sender.view!)
-        var newYaw = (Float)(translation.x)*((Float)(M_PI)/180)
-        var newPitch = (Float)(-translation.y)*((Float)(M_PI)/180)
+        //var newYaw = self.degreesToRadians((Float)(translation.x))
+        //var newPitch = self.degreesToRadians((Float)(translation.y))
+        var newYaw = (Float)(translation.x)*(Float)(M_PI/180.0)
+        var newPitch = (Float)(translation.y)*(Float)(M_PI/180.0)
         newYaw += currentYaw
         newPitch += currentPitch
         
