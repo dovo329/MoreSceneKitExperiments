@@ -15,10 +15,10 @@ class ViewController: UIViewController {
     // Geometry
     var geometryNode: SCNNode = SCNNode()
     
-    // Gestures
-    var currentX: Float = 0.0
-    var currentY: Float = 0.0
-    var currentZ: Float = 120.0
+    var cameraStartVector = SCNVector3(x: 0, y: 35, z: 120)
+    var currentX: Float = 0
+    var currentY: Float = 35
+    var currentZ: Float = 120
     var currentYaw: Float = 0.0
     var currentPitch: Float = 0.0
     var currentRoll: Float = 0.0
@@ -117,8 +117,8 @@ class ViewController: UIViewController {
         var newY = (Float)(-translation.y)
         newX += currentX
         newY += currentY
-        if (newY < 0.5) {
-            newY = 0.5
+        if (newY < 1.0) {
+            newY = 1.0
         }
         
         self.updateLabels(x:newX, y:newY, z:currentZ, yaw:currentYaw, pitch:currentPitch, roll:currentRoll)
@@ -141,6 +141,9 @@ class ViewController: UIViewController {
         newYaw += currentYaw
         newPitch += currentPitch
         
+        newYaw = newYaw % (Float)(2*M_PI)
+        newPitch = newPitch % (Float)(2*M_PI)
+        
         self.updateLabels(x:currentX, y:currentY, z:currentZ, yaw:newYaw, pitch:newPitch, roll:currentRoll)
         
         geometryNode.eulerAngles = SCNVector3(x:newPitch, y:newYaw, z:currentRoll)
@@ -155,7 +158,7 @@ class ViewController: UIViewController {
         let camera = SCNCamera()
         let cameraNode = SCNNode()
         cameraNode.camera = camera
-        cameraNode.position = SCNVector3(x: 0, y: 35, z: 120)
+        cameraNode.position = cameraStartVector
         camera.zFar = 1000
         return cameraNode
     }
