@@ -10,15 +10,17 @@ import SceneKit
 import SpriteKit
 import Foundation
 
+let cameraStartVector = SCNVector3(x: 0.0, y: 35.0, z: 120.0)
+let labelHeight : CGFloat = 20.0
+let kMinY : Float = 1.5
+
 class ViewController: UIViewController {
     
-    // Geometry
     var geometryNode: SCNNode = SCNNode()
+    var currentX: Float = cameraStartVector.x
+    var currentY: Float = cameraStartVector.y
+    var currentZ: Float = cameraStartVector.z
     
-    var cameraStartVector = SCNVector3(x: 0, y: 35, z: 120)
-    var currentX: Float = 0
-    var currentY: Float = 35
-    var currentZ: Float = 120
     var currentYaw: Float = 0.0
     var currentPitch: Float = 0.0
     var currentRoll: Float = 0.0
@@ -77,14 +79,11 @@ class ViewController: UIViewController {
         
         self.buildStonehenge(scene)
         
-        
-        let labelHeight = (CGFloat)(20.0)
-        
         positionLabel = UILabel(frame: CGRectMake(15, self.view.bounds.size.height-(labelHeight*2), self.view.bounds.size.width, labelHeight))
-        //positionLabel.center = CGPointMake(160, 284)
         positionLabel!.textAlignment = NSTextAlignment.Left
         positionLabel!.textColor = UIColor.whiteColor()
         self.view.addSubview(positionLabel!)
+
         
         rotationLabel = UILabel(frame: CGRectMake(15, self.view.bounds.size.height-labelHeight, self.view.bounds.size.width, labelHeight))
         //rotationLabel.center = CGPointMake(160, 284)
@@ -102,23 +101,53 @@ class ViewController: UIViewController {
     
     func pinchGesture(sender: UIPinchGestureRecognizer) {
         
-        currentZ = currentZ + ((Float)(-sender.velocity))
+        /*x = cos ( pitch ) * cos ( yaw )
+        y = sin ( yaw )
+        z = sin ( pitch ) * cos ( yaw )*/
         
-        println(NSString(format:"currentZ: %.2f; scale: %.2f; velocity: %.2f", currentZ, sender.scale, sender.velocity))
+        var scaleFactor = ((Float)(-sender.velocity))
+        
+        /*
+        var yawVector   = SCNVector4Make(1.0, 0.0, 0.0, currentYaw)
+        var pitchVector = SCNVector4Make(0.0, 1.0, 0.0, currentPitch)
+        var rollVector  = SCNVector4Make(0.0, 0.0, 1.0, currentRoll)
+        */
+        
+        /*let xAngle = SCNMatrix4MakeRotation(currentYaw, 1, 0, 0)
+        let yAngle = SCNMatrix4MakeRotation(currentPitch, 0, 1, 0)
+        let zAngle = SCNMatrix4MakeRotation(currentRoll, 0, 0, 1)*/
+        
+        //var rotationVector = SCNMatrix4Mult(SCNMatrix4Mult(xAngle, yAngle),zAngle)
+
+        // I wish I understood this math
+        var deltaX = scaleFactor*(sin(currentYaw)*cos(currentPitch))
+        var deltaY = -scaleFactor*(sin(currentPitch))
+        var deltaZ = scaleFactor*(cos(currentPitch) * cos(currentYaw))
+        
+        currentX += deltaX
+        currentY += deltaY
+        currentZ += deltaZ
+        
+        if (currentY < kMinY) {
+            currentY = kMinY
+        }
+        //currentZ = currentZ + ((Float)(-sender.velocity))
+        
+        //println(NSString(format:"currentZ: %.2f; scale: %.2f; velocity: %.2f", currentZ, sender.scale, sender.velocity))
         
         self.updateLabels(x:currentX, y:currentY, z:currentZ, yaw:currentYaw, pitch:currentPitch, roll:currentRoll)
         
         geometryNode.position = SCNVector3(x:currentX, y:currentY, z:currentZ)
     }
     
-    func panGesture(sender: UIPanGestureRecognizer) {
+    func panGesture2(sender: UIPanGestureRecognizer) {
         let translation = sender.translationInView(sender.view!)
         var newX = (Float)(translation.x)
         var newY = (Float)(-translation.y)
         newX += currentX
         newY += currentY
-        if (newY < 1.0) {
-            newY = 1.0
+        if (newY < kMinY) {
+            newY = kMinY
         }
         
         self.updateLabels(x:newX, y:newY, z:currentZ, yaw:currentYaw, pitch:currentPitch, roll:currentRoll)
@@ -132,7 +161,7 @@ class ViewController: UIViewController {
         }
     }
     
-    func panGesture2(sender: UIPanGestureRecognizer) {
+    func panGesture(sender: UIPanGestureRecognizer) {
         let translation = sender.translationInView(sender.view!)
         //var newYaw = self.degreesToRadians((Float)(translation.x))
         //var newPitch = self.degreesToRadians((Float)(translation.y))
